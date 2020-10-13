@@ -15,13 +15,13 @@ const params = {"movieTitle": "The Matrix"};
 const session = driver.session({database:"movies"});
 
 session.run(query, params)
-  .then(function(result) {
-    result.records.forEach(function(record) {
+  .then((result) => {
+    result.records.forEach((record) => {
         console.log(record.get('actorName'));
-    })
-	session.close();
+    });
+    session.close();
     driver.close();
   })
-  .catch(function(error) {
-    console.log(error);
+  .catch((error) => {
+    console.error(error);
   });
