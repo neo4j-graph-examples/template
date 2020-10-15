@@ -3,7 +3,7 @@ NAME=${1-movies}
 TARGETPATH=${2-/tmp}
 TARGET="$TARGETPATH/$NAME"
 if [ ! -d $TARGET ]; then
-    git clone https://github.com/neo4j-graph-examples/$name $TARGET
+    git clone https://github.com/neo4j-graph-examples/$NAME $TARGET
 fi
 
 QUERY=`grep -e '^\(:query:\| .*\+$\)' $TARGET/README.adoc | cut -d' ' -f2- | sed -e 's/\+$//g'` 
