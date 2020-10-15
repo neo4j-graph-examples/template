@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 NAME=${1-movies}
 TARGETPATH=${2-/tmp}
 TARGET="$TARGETPATH/$NAME"
@@ -6,7 +6,7 @@ if [ ! -d $TARGET ]; then
     git clone https://github.com/neo4j-graph-examples/$NAME $TARGET
 fi
 
-QUERY=`grep -e '^\(:query:\| .*\+$\)' $TARGET/README.adoc | cut -d' ' -f2- | sed -e 's/\+$//g'` 
+QUERY=`pcregrep -M '^:query:|.*\+\s*$' $TARGET/README.adoc | cut -d' ' -f2- | sed -e 's/\+$//g'`
 EXPECT=`grep :expected-result: $TARGET/README.adoc | cut -d' ' -f2-`
 PARAMNAME=`grep :param-name: $TARGET/README.adoc | cut -d' ' -f2-`
 PARAMVALUE=`grep :param-value: $TARGET/README.adoc | cut -d' ' -f2-`
@@ -25,7 +25,10 @@ JAVA_DRIVER_VERSION=4.0.1
 RX_VERSION=1.0.3
 
 # todo enterprise
-DOCKER_ID=`docker run -d -p $BOLTPORT:$BOLTPORT -v $TARGET:/repo  --env NEO4J_AUTH=$USERNAME/$PASSWORD neo4j:3.5`
+DOCKER_ID=`docker run --rm -d -p $BOLTPORT:$BOLTPORT -v $TARGET:/repo  --env NEO4J_AUTH=$USERNAME/$PASSWORD --health-cmd "cypher-shell -u $USERNAME -p $PASSWORD 'RETURN 1'" --health-interval 5s --health-timeout 5s --health-retries 5 neo4j:3.5`
+until [ "`docker inspect -f {{.State.Health.Status}} $DOCKER_ID`" = "healthy" ]; do
+    sleep 2;
+done;
 
 echo $DOCKER_ID
 docker exec $DOCKER_ID sh -c "ls /repo"
@@ -34,7 +37,6 @@ docker exec $DOCKER_ID sh -c "ls /repo"
 docker logs $DOCKER_ID
 
 # todo also handle dump files
-exit
 
 docker exec $DOCKER_ID sh -c "cat /repo/scripts/import.cypher | cypher-shell -u $USERNAME -p $PASSWORD"
 
