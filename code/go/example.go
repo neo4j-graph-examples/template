@@ -6,7 +6,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/neo4j" //Go 1.8
 )
 func main() {
-	s, err := runQuery("bolt://demo.neo4jlabs.com:7687", "mUser", "s3cr3t")
+	s, err := runQuery("neo4j+s://demo.neo4jlabs.com:7687", "mUser", "s3cr3t")
 	if err != nil {
 		panic(err)
 	}
