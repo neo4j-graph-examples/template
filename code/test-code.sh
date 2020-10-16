@@ -25,7 +25,8 @@ JAVA_DRIVER_VERSION=4.0.1
 RX_VERSION=1.0.3
 
 # todo enterprise
-DOCKER_ID=`docker run --rm -d -p $BOLTPORT:$BOLTPORT -v $TARGET:/repo  --env NEO4J_AUTH=$USERNAME/$PASSWORD --health-cmd "cypher-shell -u $USERNAME -p $PASSWORD 'RETURN 1'" --health-interval 5s --health-timeout 5s --health-retries 5 neo4j:3.5`
+DOCKER_ID=`docker run --rm -d -p $BOLTPORT:$BOLTPORT -v $TARGET:/repo  --env NEO4J_AUTH=$USERNAME/$PASSWORD --health-cmd "cypher-shell -u $USERNAME -p $PASSWORD 'RETURN 1'" --health-interval 5s --health-timeout 5s --health-retries 5 neo4j`
+trap 'docker kill $DOCKER_ID' EXIT
 until [ "`docker inspect -f {{.State.Health.Status}} $DOCKER_ID`" = "healthy" ]; do
     sleep 2;
 done;
@@ -38,7 +39,7 @@ docker logs $DOCKER_ID
 
 # todo also handle dump files
 
-docker exec $DOCKER_ID sh -c "cat /repo/scripts/import.cypher | cypher-shell -u $USERNAME -p $PASSWORD"
+docker exec $DOCKER_ID sh -c "cypher-shell -u $USERNAME -p $PASSWORD -f /repo/scripts/import.cypher"
 
 echo "Node-Count:"
 docker exec $DOCKER_ID cypher-shell -u $USERNAME -p $PASSWORD 'MATCH (n) RETURN count(*);'
@@ -48,26 +49,25 @@ mkdir -p $CODE
 pushd $CODE
 
 npm install --save neo4j-driver 
-sed -e "s/<BOLTPORT>/$BOLTPORT/g" -e "s/<HOST>/$HOST/g" -e "s/mUser/$USERNAME/g" -e "s/s3cr3t/$PASSWORD/g" $TARGET/code/javascript/example.js > example.js
+sed -e "s/<BOLTPORT>/$BOLTPORT/g" -e "s/<HOST>/$HOST/g" -e "s/<USERNAME>/$USERNAME/g" -e "s/<PASSWORD>/$PASSWORD/g" $TARGET/code/javascript/example.js > example.js
+
 node example.js | grep "$EXPECT" || echo "JAVASCRIPT FAIL"
 
 pip install neo4j-driver
-sed -e "s/<BOLTPORT>/$BOLTPORT/g" -e "s/<HOST>/$HOST/g" -e "s/mUser/$USERNAME/g" -e "s/s3cr3t/$PASSWORD/g" $TARGET/code/python/example.py > example.py
+sed -e "s/<BOLTPORT>/$BOLTPORT/g" -e "s/<HOST>/$HOST/g" -e "s/<USERNAME>/$USERNAME/g" -e "s/<PASSWORD>/$PASSWORD/g" $TARGET/code/python/example.py > example.py
 python example.py | grep "$EXPECT" || echo "PYTHON FAIL"
 
 curl -sOL https://repo1.maven.org/maven2/org/reactivestreams/reactive-streams/${RX_VERSION}/reactive-streams-${RX_VERSION}.jar
 curl -sOL https://repo1.maven.org/maven2/org/neo4j/driver/neo4j-java-driver/${JAVA_DRIVER_VERSION}/neo4j-java-driver-${JAVA_DRIVER_VERSION}.jar
 
-sed -e "s/<BOLTPORT>/$BOLTPORT/g" -e "s/<HOST>/$HOST/g" -e "s/mUser/$USERNAME/g" -e "s/s3cr3t/$PASSWORD/g" $TARGET/code/java/Example.java > Example.java
+sed -e "s/<BOLTPORT>/$BOLTPORT/g" -e "s/<HOST>/$HOST/g" -e "s/<USERNAME>/$USERNAME/g" -e "s/<PASSWORD>/$PASSWORD/g" $TARGET/code/java/Example.java > Example.java
 
 javac -cp neo4j-java-driver-${JAVA_DRIVER_VERSION}.jar Example.java
 java -cp neo4j-java-driver-${JAVA_DRIVER_VERSION}.jar:reactive-streams-${RX_VERSION}.jar:. Example  | grep "$EXPECT" || echo "JAVA FAIL"
 
-sed -e "s/<BOLTPORT>/$BOLTPORT/g" -e "s/<HOST>/$HOST/g" -e "s/mUser/$USERNAME/g" -e "s/s3cr3t/$PASSWORD/g" $TARGET/code/go/example.go > example.go
+sed -e "s/<BOLTPORT>/$BOLTPORT/g" -e "s/<HOST>/$HOST/g" -e "s/<USERNAME>/$USERNAME/g" -e "s/<PASSWORD>/$PASSWORD/g" $TARGET/code/go/example.go > example.go
 go mod init main
 go run example.go | grep "$EXPECT" || echo "GO FAIL"
 
 popd
 
-echo rm -rf $TMP
-docker rm -f $DOCKER_ID

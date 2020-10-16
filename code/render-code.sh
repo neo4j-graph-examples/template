@@ -22,7 +22,7 @@ echo Expecting \"$EXPECT\" with {\"$PARAMNAME\": \"$PARAMVALUE\"} returning \"$R
 #echo "----"
 #echo ${PARAMNAME} ${PARAMVALUE} ${RESULTCOLUMN}
 
-echo "Adding language examples to $TARGET, hit ctrl-c to abort, anything else to proceed"
+echo "Adding language examples to $TARGET, hit <CTRL-c> to abort, <ENTER> to proceed"
 read
 
 mkdir -p $TARGET/code
@@ -39,15 +39,14 @@ pushd code
     BOLTURL="bolt:\/\/<HOST>:<BOLTPORT>"
 
     for file in `ls */?xample.*`; do
-        echo $file;
         LANG=${file%%/*}
-        echo "Updating $LANG $file"
+        echo "Updating $file"
         mkdir -p $TARGET/code/$LANG
         cp $file $TARGET/code/$file
         indent=`grep 'MATCH (m:Movie' $TARGET/code/$file | cut -d'M' -f1 | cut -d'"' -f1`
     #    echo "Indent #$indent#"
         if [ $LANG == "java" ]; then
-          Q2=`/bin/echo -n "$QUERY" | sed -e "s/\(.*\)/$indent\"\1\" +/g" | tr '\n' '§' | sed -e 's/\+$/;/g'`
+          Q2=`/bin/echo -n "$QUERY" | sed -e "s/\(.*\)/$indent\"\1\" +/g" | tr '\n' '§' | sed -e 's/\+§$/;§/g'`
         else
           Q2=`/bin/echo -n "$QUERY" | sed -e "s/\(.*\)/$indent\1/g" | tr '\n' '§'`
         fi
