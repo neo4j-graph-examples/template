@@ -54,7 +54,6 @@ pushd code
         sed -i.tmp -e "s/^.*MATCH (m:Movie.*$/$Q2/g" $TARGET/code/$file
         mv $TARGET/code/$file $TARGET/code/$file.tmp
         tr '§' '\n' < $TARGET/code/$file.tmp > $TARGET/code/$file
-        rm $TARGET/code/$file.tmp
 
         sed -i.tmp -e "s/$URL/$BOLTURL/g" $TARGET/code/$file
         sed -i.tmp -e "s/movieTitle/$PARAMNAME/g" $TARGET/code/$file
@@ -64,5 +63,7 @@ pushd code
         sed -i.tmp -e "s/movies/neo4j/g" $TARGET/code/$file
         sed -i.tmp -e "s/mUser/<USERNAME>/g" $TARGET/code/$file
         sed -i.tmp -e "s/s3cr3t/<PASSWORD>/g" $TARGET/code/$file
+
+        rm $TARGET/code/$file.tmp
     done
 popd
