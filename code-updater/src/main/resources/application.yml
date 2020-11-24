@@ -1,0 +1,9 @@
+sandbox:
+  template-repository-path:
+  batch:
+    repositories: # please either configure watched sandbox repositories here or in CI via environment variables but not both
+      - git@github.com:fbiville/graph-data-science.git
+  github:
+    address: https://api.github.com
+    username:
+    token:

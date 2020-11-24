@@ -1,0 +1,29 @@
+{
+  "properties": [
+    {
+      "name": "sandbox.template-repository-path",
+      "type": "java.lang.String",
+      "description": "Path to the local clone of https://github.com/neo4j-graph-examples/template/ where the initial code samples live."
+    },
+    {
+      "name": "sandbox.batch.repositories",
+      "type": "java.lang.String",
+      "description": "List of sandbox repository URIs to run code sample updates against. The repositories are typically in https://github.com/neo4j-graph-examples. Only HTTPS and SSH URI forms are supported."
+    },
+    {
+      "name": "sandbox.github.address",
+      "type": "java.lang.String",
+      "description": "Base URL of the Github API, typically https://api.github.com."
+    },
+    {
+      "name": "sandbox.github.username",
+      "type": "java.lang.String",
+      "description": "Github account needed to open pull requests against the configured sandbox repositories (see sandbox.updater.repositories property)."
+    },
+    {
+      "name": "sandbox.github.token",
+      "type": "java.lang.String",
+      "description": "Github access token of the configured Github account (see sandbox.github.username) needed to open pull requests against the configured sandbox repositories (see sandbox.updater.repositories property)."
+    }
+  ]
+}
