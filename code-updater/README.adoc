@@ -1,0 +1,67 @@
+= Sandbox Batch Updater
+
+== Scope
+
+The batch updater is a Spring Boot application that watches a set of sandbox repositories and creates pull requests with sample code changes whenever necessary (typically via a CI pipeline).
+
+NOTE: Sandboxes typically live in https://github.com/neo4j-graph-examples/ and feature specific datasets and queries, as well as code samples.
+These samples need to be regularly updated to keep up with the driver changes.
+
+The samples are declined in all the languages that the Neo4j Drivers officially support.
+They are based on link:../code/[the code samples versioned here] and tailored to every sandbox, based on the metadata they define in their README files (via Asciidoc attributes).
+
+== Prerequisites
+
+ - JDK 11+
+ - Apache Maven
+
+== Relevant Configuration
+
+If you want to learn more about the flexibility of Spring Boot configuration, read https://docs.spring.io/spring-boot/docs/2.4.0/reference/html/spring-boot-features.html#boot-features-external-config[this].
+
+[%header,cols=4*]
+|===
+|Name
+|Environment variable syntax
+|Default value (or N/A)
+|Comments
+
+|sandbox.repositories
+|SANDBOX_REPOSITORIES
+|(see file)
+|List of sandbox Git repository URIs.
+Better use link:./src/main/resources/application.yml[application.yml] as lists are easier to express in YAML.
+Please use the HTTP form of URIs in Github Actions CI as token-based authentication will not work otherwise.
+SSH URIs are fine when used locally.
+
+|github.address
+|GITHUB_ADDRESS
+|https://api.github.com
+|Base URI of Github APIs.
+
+|github.username
+|GITHUB_USERNAME
+|N/A
+|Name of the Github account used for authenticating pull requests. This is typically provided as a secret in CI.
+
+|github.token
+|GITHUB_TOKEN
+|N/A
+|Personal access token of the Github account used for authenticating pull requests. The `public_repo` scope is usually enough. This is typically provided as a secret in CI.
+
+|github.workspace
+|GITHUB_WORKSPACE
+|N/A
+|Path to the root folder of the local clone of the `template` repository. This is automatically populated by Github Actions.
+|===
+
+== Run this
+
+Once you have configured the application in CI or to your local setup (see above), just run:
+
+[source,shell]
+----
+mvn spring-boot:run
+----
+
+NOTE: Fork sandboxes and configure the app with those if you just want to test stuff
