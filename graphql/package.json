@@ -7,8 +7,4 @@
         "dotenv": "^8.2.0",
         "apollo-server": "^2.12.0"
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> d76dddfeecddb983925d86ef8324c5279a0b50b5
