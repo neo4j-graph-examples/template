@@ -1,13 +1,19 @@
 {
-    "name": "template",
-    "description":"Template example",
-    "dbms": [
-      {
-          "targetNeo4jVersion":"3.5"
-      },
-      {
-          "scriptFile":"scripts/template.cypher",
-          "targetNeo4jVersion": "^4.0"
-      }
+  "name": "template",
+  "description": "Template example",
+  "dbms": [
+    {
+      "targetNeo4jVersion": "3.5"
+    },
+    {
+      "scriptFile": "scripts/template.cypher",
+      "targetNeo4jVersion": "^4.0",
+      "plugins": ["pludinId1", "pluginId2"]
+    },
+    {
+      "dumpFile": "path/to/file.dump",
+      "targetNeo4jVersion": "^4.0",
+      "plugins": ["pludinId1", "pluginId2"]
+    }
   ]
 }
