@@ -133,16 +133,16 @@ endif::[]
 * link:code/python/example.py[Python]
 * link:code/go/example.go[Go]
 
-=== relate.project.json
+=== relate.project-install.json
 
 Defining DBMSs:
 
-The `dbms` key is an array containing information about sample dbms installation. It has four potential keys which of `targetNeo4jVersion` is required. See link:relate.project.json[relate.project.json] for reference.
+The `dbms` key is an array containing information about sample dbms installation. It has four potential keys which of `targetNeo4jVersion` is required. See link:relate.project-install.json[relate.project-install.json] for reference.
 
 * `targetNeo4jVersion`: [required] A semver formatted version number defining which version of Neo4j to use. Use the https://semver.npmjs.com[semver calculator] to verify the version.
-* `plugins`: An array of plugin IDs. For example `["apoc", "graph-data-science"]`.
-* `dumpFile`: Path to a neo4j dump file that will be imported after the dbms has been created.
-* `scriptFile`: Path to a cypher script that will be imported after the dbms has been created.
+* `plugins`: (optional) An array of plugin IDs. For example `["apoc", "graph-data-science"]`.
+* `dumpFile`: (optional) Path to a local neo4j dump file or an http link that will be imported after the dbms has been created.
+* `scriptFile`: (optional) Path to a local cypher script or an http link that will be imported after the dbms has been created.
 
 === Feedback
 
