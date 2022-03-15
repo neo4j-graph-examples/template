@@ -3,7 +3,7 @@
 const neo4j = require('neo4j-driver');
 const driver = neo4j.driver('neo4j+s://demo.neo4jlabs.com:7687',
                   neo4j.auth.basic('mUser', 's3cr3t'), 
-                  {/* encrypted: 'ENCRYPTION_OFF' */});
+                  {});
 
 const query =
   `
