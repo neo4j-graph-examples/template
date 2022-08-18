@@ -1,21 +1,25 @@
-# pip3 install neo4j-driver
-# python3 example.py
+# (requires Python 3.6 or newer and pip, check with `pip --version`)
+# pip install neo4j
+# python example.py
 
-from neo4j import GraphDatabase, basic_auth
+from neo4j import GraphDatabase
 
-driver = GraphDatabase.driver(
-  "neo4j+s://demo.neo4jlabs.com:7687",
-  auth=basic_auth("mUser", "s3cr3t"))
+def products_of_category(transaction, category_):
+    cypher_query = (
+        "MATCH (p:Product)-[:PART_OF]->(:Category)-[:PARENT*0..]->"
+        "(:Category {categoryName:$category})\n"
+        "RETURN p.productName as product")
+    result = transaction.run(cypher_query, category=category_)
+    return result.value("product")
 
-cypher_query = '''
-MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person) RETURN a.name as actorName
-'''
+uri = "neo4j://<HOST>:<BOLTPORT>"
+auth = ("<USERNAME>", "<PASSWORD>")
+driver = GraphDatabase.driver(uri, auth=auth)
 
-with driver.session(database="movies") as session:
-  results = session.read_transaction(
-    lambda tx: tx.run(cypher_query,
-                      movieTitle="The Matrix").data())
-  for record in results:
-    print(record['actorName'])
+with driver.session(database="neo4j") as session:
+    categories = session.read_transaction(products_of_category,
+                                          "Dairy Products")
+    for category in categories:
+        print(category)
 
 driver.close()

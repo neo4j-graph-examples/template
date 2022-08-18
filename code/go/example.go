@@ -1,68 +1,50 @@
-// go mod init main
+// go mod init my-module-path
 // go run example.go
 package main
 
 import (
 	"fmt"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"io"
-	"reflect"
 )
 
 func main() {
-	results, err := runQuery("neo4j+s://demo.neo4jlabs.com:7687", "movies", "mUser", "s3cr3t")
+	credentials := neo4j.BasicAuth("<USERNAME>", "<PASSWORD>", "")
+	driver, err := neo4j.NewDriver("neo4j://<HOST>:<BOLTPORT>", credentials)
+	if err != nil {
+		panic("Could not create driver")
+	}
+	defer driver.Close()
+	results, err := runQuery(driver, getDairyProducts)
 	if err != nil {
 		panic(err)
 	}
-	for _, result := range results {
-		fmt.Println(result)
-	}
+	fmt.Println(results)
 }
 
-func runQuery(uri, database, username, password string) (result []string, err error) {
-	driver, err := neo4j.NewDriver(uri, neo4j.BasicAuth(username, password, ""))
+func runQuery(driver neo4j.Driver, txFunc neo4j.TransactionWork) (interface{}, error) {
+	session := driver.NewSession(neo4j.SessionConfig{DatabaseName: "neo4j"})
+	defer session.Close()
+	return session.ReadTransaction(txFunc)
+}
+
+func getDairyProducts(transaction neo4j.Transaction) (interface{}, error) {
+	cursor, err := transaction.Run(
+		`MATCH (p:Product)-[:PART_OF]->(:Category)-[:PARENT*0..]->
+		(:Category {categoryName:$category})
+		RETURN p.productName as product`,
+		map[string]interface{}{"category": "Dairy Products"})
 	if err != nil {
 		return nil, err
 	}
-	defer func() {err = handleClose(driver, err)}()
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead, DatabaseName: database})
-	defer func() {err = handleClose(session, err)}()
-	results, err := session.ReadTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
-		result, err := transaction.Run(
-			`
-			MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person) RETURN a.name as actorName
-			`, map[string]interface{}{
-				"movieTitle": "The Matrix",
-			})
-		if err != nil {
-			return nil, err
+	var results []string
+	for cursor.Next() {
+		value, found := cursor.Record().Get("product")
+		if found {
+			results = append(results, value.(string))
 		}
-		var arr []string
-		for result.Next() {
-			value, found := result.Record().Get("actorName")
-			if found {
-				arr = append(arr, value.(string))
-			}
-		}
-		if err = result.Err(); err != nil {
-			return nil, err
-		}
-		return arr, nil
-	})
-	if err != nil {
+	}
+	if err = cursor.Err(); err != nil {
 		return nil, err
 	}
-	result = results.([]string)
-	return result, err
-}
-
-func handleClose(closer io.Closer, previousError error) error {
-	err := closer.Close()
-	if err == nil {
-		return previousError
-	}
-	if previousError == nil {
-		return err
-	}
-	return fmt.Errorf("%v closure error occurred:\n%s\ninitial error was:\n%w", reflect.TypeOf(closer), err.Error(), previousError)
+	return results, nil
 }

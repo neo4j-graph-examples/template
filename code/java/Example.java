@@ -1,35 +1,32 @@
-// Add your the driver dependency to your pom.xml build.gradle etc.
-// Java Driver Dependency: http://search.maven.org/#artifactdetails|org.neo4j.driver|neo4j-java-driver|4.0.1|jar
+// Use Java 17 for this example.
+// Add the driver dependency to your pom.xml build.gradle etc.
+// Java Driver Dependency:  http://search.maven.org/#artifactdetails|org.neo4j.driver|neo4j-java-driver|4.4.9|jar
 // Reactive Streams http://search.maven.org/#artifactdetails|org.reactivestreams|reactive-streams|1.0.3|jar
 // download jars into current directory
 // java -cp "*" Example.java
 
-import org.neo4j.driver.*;
-import static org.neo4j.driver.Values.parameters;
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Query;
+import org.neo4j.driver.SessionConfig;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Example {
+    public static void main(String[] args) {
+        try (var driver = GraphDatabase.driver("neo4j://<HOST>:<BOLTPORT>", AuthTokens.basic("<USERNAME>", "<PASSWORD>"));
+             var session = driver.session(SessionConfig.forDatabase("neo4j"))) {
+            var query = new Query("""
+                    MATCH (p:Product)-[:PART_OF]->(:Category)-[:PARENT*0..]->(:Category {categoryName:$category}) \
+                    RETURN p.productName as product\
+                    """, Map.of("category", "Dairy Products"));
 
-  public static void main(String...args) {
+            var products = session.readTransaction(tx -> tx.run(query).stream()
+                    .map(record -> record.get("product").asString())
+                    .collect(Collectors.toList()));
 
-    Driver driver = GraphDatabase.driver("neo4j+s://demo.neo4jlabs.com:7687",
-              AuthTokens.basic("mUser","s3cr3t"));
-
-    try (Session session = driver.session(SessionConfig.forDatabase("movies"))) {
-
-      String cypherQuery =
-        "MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person) RETURN a.name as actorName";
-
-      var result = session.readTransaction(
-        tx -> tx.run(cypherQuery, 
-                parameters("movieTitle","The Matrix"))
-            .list());
-
-      for (Record record : result) {
-        System.out.println(record.get("actorName").asString());
-      }
+            products.forEach(System.out::println);
+        }
     }
-    driver.close();
-  }
 }
-
-
