@@ -16,17 +16,17 @@ import java.util.stream.Collectors;
 public class Example {
     public static void main(String[] args) {
         try (var driver = GraphDatabase.driver("neo4j://<HOST>:<BOLTPORT>", AuthTokens.basic("<USERNAME>", "<PASSWORD>"));
-             var session = driver.session(SessionConfig.forDatabase("neo4j"))) {
+             var session = driver.session(SessionConfig.forDatabase("movies"))) {
             var query = new Query("""
-                    MATCH (p:Product)-[:PART_OF]->(:Category)-[:PARENT*0..]->(:Category {categoryName:$category}) \
-                    RETURN p.productName as product\
-                    """, Map.of("category", "Dairy Products"));
+                    MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person) \
+                    RETURN a.name as actorName\
+                    """, Map.of("movieTitle", "The Matrix"));
 
-            var products = session.readTransaction(tx -> tx.run(query).stream()
-                    .map(record -> record.get("product").asString())
+            var result = session.readTransaction(tx -> tx.run(query).stream()
+                    .map(record -> record.get("actorName").asString())
                     .collect(Collectors.toList()));
 
-            products.forEach(System.out::println);
+            result.forEach(System.out::println);
         }
     }
 }

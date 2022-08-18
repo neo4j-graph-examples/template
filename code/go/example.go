@@ -22,23 +22,22 @@ func main() {
 }
 
 func runQuery(driver neo4j.Driver, txFunc neo4j.TransactionWork) (interface{}, error) {
-	session := driver.NewSession(neo4j.SessionConfig{DatabaseName: "neo4j"})
+	session := driver.NewSession(neo4j.SessionConfig{DatabaseName: "movies"})
 	defer session.Close()
 	return session.ReadTransaction(txFunc)
 }
 
 func getDairyProducts(transaction neo4j.Transaction) (interface{}, error) {
 	cursor, err := transaction.Run(
-		`MATCH (p:Product)-[:PART_OF]->(:Category)-[:PARENT*0..]->
-		(:Category {categoryName:$category})
-		RETURN p.productName as product`,
-		map[string]interface{}{"category": "Dairy Products"})
+		`MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person) 
+		RETURN a.name as actorName`,
+		map[string]interface{}{"movieTitle": "The Matrix"})
 	if err != nil {
 		return nil, err
 	}
 	var results []string
 	for cursor.Next() {
-		value, found := cursor.Record().Get("product")
+		value, found := cursor.Record().Get("actorName")
 		if found {
 			results = append(results, value.(string))
 		}

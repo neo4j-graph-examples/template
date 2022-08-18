@@ -4,21 +4,20 @@
 
 from neo4j import GraphDatabase
 
-def products_of_category(transaction, category_):
+def products_of_category(transaction, movie_title_):
     cypher_query = (
-        "MATCH (p:Product)-[:PART_OF]->(:Category)-[:PARENT*0..]->"
-        "(:Category {categoryName:$category})\n"
-        "RETURN p.productName as product")
-    result = transaction.run(cypher_query, category=category_)
-    return result.value("product")
+        "MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person)" 
+        "RETURN a.name as actorName")
+    result = transaction.run(cypher_query, movie_title=movie_title_)
+    return result.value("actorName")
 
 uri = "neo4j://<HOST>:<BOLTPORT>"
 auth = ("<USERNAME>", "<PASSWORD>")
 driver = GraphDatabase.driver(uri, auth=auth)
 
-with driver.session(database="neo4j") as session:
-    categories = session.read_transaction(products_of_category,
-                                          "Dairy Products")
+with driver.session(database="movies") as session:
+    categories = session.read_transaction(movies,
+                                          "The Matrix")
     for category in categories:
         print(category)
 

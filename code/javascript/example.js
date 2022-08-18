@@ -16,21 +16,20 @@ async function main() {
 }
 
 async function getDairyProducts(driver) {
-  const session = driver.session({ database: "neo4j" });
+  const session = driver.session({ database: "movies" });
 
   try {
     return await session.readTransaction(async tx => {
       const query = `
-        MATCH (p:Product)-[:PART_OF]->(:Category)-[:PARENT*0..]->
-        (:Category {categoryName:$category})
-        RETURN p.productName as product
+        MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person) 
+        RETURN a.name as actorName
         `;
 
-      const params = { category: "Dairy Products" };
+      const params = { movieTitle: "The Matrix" };
 
       const result = await tx.run(query, params);
 
-      return result.records.map(record => record.get('product'))
+      return result.records.map(record => record.get('actorName'))
     });
   } finally {
     await session.close();
