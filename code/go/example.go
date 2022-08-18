@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	credentials := neo4j.BasicAuth("<USERNAME>", "<PASSWORD>", "")
-	driver, err := neo4j.NewDriver("neo4j://<HOST>:<BOLTPORT>", credentials)
+	credentials := neo4j.BasicAuth("mUser", "s3cr3t", "")
+	driver, err := neo4j.NewDriver("neo4j+s://demo.neo4jlabs.com:7687", credentials)
 	if err != nil {
 		panic("Could not create driver")
 	}

@@ -6,7 +6,7 @@
 
 using Neo4j.Driver;
 
-using var driver = GraphDatabase.Driver("neo4j://<HOST>:<BOLTPORT>", AuthTokens.Basic("<USERNAME>", "<PASSWORD>"));
+using var driver = GraphDatabase.Driver("neo4j+s://demo.neo4jlabs.com:7687", AuthTokens.Basic("mUser", "s3cr3t"));
 
 var cypherQuery = @"
 MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person) 

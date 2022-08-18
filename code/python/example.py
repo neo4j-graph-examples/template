@@ -11,8 +11,8 @@ def products_of_category(transaction, movie_title_):
     result = transaction.run(cypher_query, movie_title=movie_title_)
     return result.value("actorName")
 
-uri = "neo4j://<HOST>:<BOLTPORT>"
-auth = ("<USERNAME>", "<PASSWORD>")
+uri = "neo4j+s://demo.neo4jlabs.com:7687"
+auth = ("mUser", "s3cr3t")
 driver = GraphDatabase.driver(uri, auth=auth)
 
 with driver.session(database="movies") as session:

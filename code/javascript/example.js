@@ -3,7 +3,7 @@
 const neo4j = require("neo4j-driver");
 
 async function main() {
-  const driver = neo4j.driver("neo4j://<HOST>:<BOLTPORT>", neo4j.auth.basic("<USERNAME>", "<PASSWORD>"));
+  const driver = neo4j.driver("neo4j+s://demo.neo4jlabs.com:7687", neo4j.auth.basic("mUser", "s3cr3t"));
 
   try {
     const products = await getDairyProducts(driver)

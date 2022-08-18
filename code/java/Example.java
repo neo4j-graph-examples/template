@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class Example {
     public static void main(String[] args) {
-        try (var driver = GraphDatabase.driver("neo4j://<HOST>:<BOLTPORT>", AuthTokens.basic("<USERNAME>", "<PASSWORD>"));
+        try (var driver = GraphDatabase.driver("neo4j+s://demo.neo4jlabs.com:7687", AuthTokens.basic("mUser", "s3cr3t"));
              var session = driver.session(SessionConfig.forDatabase("movies"))) {
             var query = new Query("""
                     MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person) \
