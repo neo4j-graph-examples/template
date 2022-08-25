@@ -6,8 +6,8 @@ from neo4j import GraphDatabase
 
 def get_movies(transaction, movie_title_):
     cypher_query = (
-        "MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person)" 
-        "RETURN a.name as actorName")
+        """MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person)  
+        RETURN a.name as actorName""")
     result = transaction.run(cypher_query, movieTitle=movie_title_)
     return result.value("actorName")
 
