@@ -6,7 +6,7 @@ async function main() {
   const driver = neo4j.driver("neo4j+s://demo.neo4jlabs.com:7687", neo4j.auth.basic("mUser", "s3cr3t"));
 
   try {
-    const products = await getDairyProducts(driver)
+    const products = await getMovies(driver)
     products.forEach(product => console.log(product))
   } catch (error) {
     console.error(error);
@@ -15,7 +15,7 @@ async function main() {
   }
 }
 
-async function getDairyProducts(driver) {
+async function getMovies(driver) {
   const session = driver.session({ database: "movies" });
 
   try {

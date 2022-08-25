@@ -14,7 +14,7 @@ func main() {
 		panic("Could not create driver")
 	}
 	defer driver.Close()
-	results, err := runQuery(driver, getDairyProducts)
+	results, err := runQuery(driver, getMovies)
 	if err != nil {
 		panic(err)
 	}
@@ -27,7 +27,7 @@ func runQuery(driver neo4j.Driver, txFunc neo4j.TransactionWork) (interface{}, e
 	return session.ReadTransaction(txFunc)
 }
 
-func getDairyProducts(transaction neo4j.Transaction) (interface{}, error) {
+func getMovies(transaction neo4j.Transaction) (interface{}, error) {
 	cursor, err := transaction.Run(
 		`MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person) 
 		RETURN a.name as actorName`,

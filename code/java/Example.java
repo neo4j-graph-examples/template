@@ -5,10 +5,7 @@
 // download jars into current directory
 // java -cp "*" Example.java
 
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.GraphDatabase;
-import org.neo4j.driver.Query;
-import org.neo4j.driver.SessionConfig;
+import org.neo4j.driver.*;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -16,7 +13,7 @@ import java.util.stream.Collectors;
 public class Example {
     public static void main(String[] args) {
         try (var driver = GraphDatabase.driver("neo4j+s://demo.neo4jlabs.com:7687", AuthTokens.basic("mUser", "s3cr3t"));
-             var session = driver.session(SessionConfig.forDatabase("movies"))) {
+            var session = driver.session(SessionConfig.forDatabase("movies"))) {
             var query = new Query("""
                     MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person) \
                     RETURN a.name as actorName\
