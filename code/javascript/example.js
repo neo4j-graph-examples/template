@@ -7,7 +7,7 @@ async function main() {
 
   try {
     const products = await getMovies(driver)
-    products.forEach(product => console.log(product))
+    products.forEach(console.log)
   } catch (error) {
     console.error(error);
   } finally {
