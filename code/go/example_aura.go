@@ -1,34 +1,23 @@
 package main
+
 import (
+	"context"
 	"fmt"
-	"github.com/neo4j/neo4j-go-driver/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
+
 func main() {
-	var driver neo4j.Driver
-	var err error
-	// Aura requires you to use "bolt+routing" protocol, and process your queries using an encrypted connection
+	ctx := context.Background()
+	// Aura requires you to use "neo4j+s" scheme, so that your queries are processed using an encrypted connection
 	// (You may need to replace your connection details, username and password)
-	boltURL := "bolt+routing://<Bolt url for Neo4j Aura database>"
+	uri := "neo4j+s://<Bolt url for Neo4j Aura database>"
 	auth := neo4j.BasicAuth("<Username for Neo4j Aura database>", "<Password for Neo4j Aura database>", "")
-
-	configurers := []func(*neo4j.Config){
-		func (config *neo4j.Config) {
-			config.Encrypted = true
-		},
-	}
-	if driver, err = neo4j.NewDriver(boltURL, auth, configurers...); err != nil {
+	driver, err := neo4j.NewDriverWithContext(uri, auth)
+	if err != nil {
 		panic(err)
 	}
-
 	// Don't forget to close the driver connection when you are finished with it
-	defer driver.Close()
-
-	var writeSession neo4j.Session
-	// Using write transactions allow the driver to handle retries and transient errors for you
-	if writeSession, err = driver.Session(neo4j.AccessModeWrite); err != nil {
-		panic(err)
-	}
-	defer writeSession.Close()
+	defer closeResource(ctx, driver)
 
 	// To learn more about the Cypher syntax, see https://neo4j.com/docs/cypher-manual/current/
 	// The Reference Card is also a good resource for keywords https://neo4j.com/docs/cypher-refcard/current/
@@ -37,52 +26,54 @@ func main() {
 		MERGE (p2:Person { name: $person2_name })
 		MERGE (p1)-[:KNOWS]->(p2)
 		RETURN p1, p2`
-
-	var result neo4j.Result
-	result, err = writeSession.Run(createRelationshipBetweenPeopleQuery, map[string]interface{}{
+	params := map[string]any{
 		"person1_name": "Alice",
 		"person2_name": "David",
-	})
+	}
 
+	// Using ExecuteQuery allows the driver to handle retries and transient errors for you
+	result, err := neo4j.ExecuteQuery(ctx, driver, createRelationshipBetweenPeopleQuery, params,
+		neo4j.EagerResultTransformer)
 	if err != nil {
 		panic(err)
 	}
-
-	// You should capture any errors along with the query and data for traceability
-	if result.Err() != nil {
-		panic(result.Err())
+	for _, record := range result.Records {
+		fmt.Printf("First: '%s'\n", getPersonName(record, "p1"))
+		fmt.Printf("Second: '%s'\n", getPersonName(record, "p2"))
 	}
-
-	for result.Next() {
-		firstPerson := result.Record().GetByIndex(0).(neo4j.Node)
-		fmt.Printf("First: '%s'\n", firstPerson.Props()["name"].(string))
-		secondPerson := result.Record().GetByIndex(1).(neo4j.Node)
-		fmt.Printf("Second: '%s'\n", secondPerson.Props()["name"].(string))
-	}
-
-	var readSession neo4j.Session
-
-	if readSession, err = driver.Session(neo4j.AccessModeRead); err != nil {
-		panic(err)
-	}
-	defer readSession.Close()
 
 	readPersonByName := `
 		MATCH (p:Person)
 		WHERE p.name = $person_name
 		RETURN p.name AS name`
-
-	result, err = readSession.Run(readPersonByName, map[string]interface{}{"person_name": "Alice"})
-
+	result, err = neo4j.ExecuteQuery(ctx, driver, readPersonByName, map[string]any{"person_name": "Alice"},
+		neo4j.EagerResultTransformer)
 	if err != nil {
 		panic(err)
 	}
-
-	if result.Err() != nil {
-		panic(result.Err())
+	for _, record := range result.Records {
+		name, _, err := neo4j.GetRecordValue[string](record, "name")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Person name: '%s' \n", name)
 	}
+}
 
-	for result.Next() {
-		fmt.Printf("Person name: '%s' \n", result.Record().GetByIndex(0).(string))
+func closeResource(ctx context.Context, closer interface{ Close(context.Context) error }) {
+	if err := closer.Close(ctx); err != nil {
+		panic(err)
 	}
+}
+
+func getPersonName(record *neo4j.Record, key string) string {
+	firstPerson, _, err := neo4j.GetRecordValue[neo4j.Node](record, key)
+	if err != nil {
+		panic(err)
+	}
+	firstPersonName, err := neo4j.GetProperty[string](firstPerson, "name")
+	if err != nil {
+		panic(err)
+	}
+	return firstPersonName
 }
