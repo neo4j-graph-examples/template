@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+
+	"github.com/neo4j/neo4j-go-driver/v6/neo4j"
 )
 
 func main() {
@@ -12,7 +13,7 @@ func main() {
 	// (You may need to replace your connection details, username and password)
 	uri := "neo4j+s://<Bolt url for Neo4j Aura database>"
 	auth := neo4j.BasicAuth("<Username for Neo4j Aura database>", "<Password for Neo4j Aura database>", "")
-	driver, err := neo4j.NewDriverWithContext(uri, auth)
+	driver, err := neo4j.NewDriver(uri, auth)
 	if err != nil {
 		panic(err)
 	}
