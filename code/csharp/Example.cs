@@ -1,37 +1,27 @@
-// install dotnet core on your system
+// install dotnet 10 on your system
+// https://dotnet.microsoft.com/en-us/download/dotnet
 // dotnet new console -o .
 // dotnet add package Neo4j.Driver
 // paste in this code into Program.cs
 // dotnet run
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using Neo4j.Driver;
-  
-namespace dotnet {
-  class Example {
-  static async Task Main() {
-    var driver = GraphDatabase.Driver("neo4j+s://demo.neo4jlabs.com:7687", 
-                    AuthTokens.Basic("mUser", "s3cr3t"));
+using Neo4j.Driver.Mapping;
 
-    var cypherQuery =
-      @"
-      MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person) RETURN a.name as actorName
-      ";
+await using var driver = GraphDatabase.Driver(
+    "neo4j+s://demo.neo4jlabs.com:7687",
+    AuthTokens.Basic("mUser", "s3cr3t"));
 
-    var session = driver.AsyncSession(o => o.WithDatabase("movies"));
-    var result = await session.ReadTransactionAsync(async tx => {
-      var r = await tx.RunAsync(cypherQuery, 
-              new { movieTitle="The Matrix"});
-      return await r.ToListAsync();
-    });
+var actors = await driver
+    .ExecutableQuery(@"
+        MATCH (m:Movie {title:$movieTitle})<-[:ACTED_IN]-(a:Person)
+        RETURN a.name AS name, a.born AS born")
+    .WithParameters(new { movieTitle = "The Matrix" })
+    .WithConfig(new QueryConfig(database: "movies"))
+    .ExecuteAsync()
+    .AsObjectsAsync<Actor>();
 
-    await session?.CloseAsync();
-    foreach (var row in result)
-      Console.WriteLine(row["actorName"].As<string>());
-	  
-    }
-  }
-}
+foreach (var actor in actors)
+    Console.WriteLine(actor);
+
+record Actor(string name, int born);
