@@ -1,4 +1,4 @@
-// install dotnet 10 on your system
+// install dotnet on your system
 // https://dotnet.microsoft.com/en-us/download/dotnet
 // dotnet new console -o .
 // dotnet add package Neo4j.Driver
