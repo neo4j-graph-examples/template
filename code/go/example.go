@@ -5,8 +5,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"reflect"
+
+	"github.com/neo4j/neo4j-go-driver/v6/neo4j"
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 
 func runQuery(uri, database, username, password string) (_ []string, err error) {
 	ctx := context.Background()
-	driver, err := neo4j.NewDriverWithContext(uri, neo4j.BasicAuth(username, password, ""))
+	driver, err := neo4j.NewDriver(uri, neo4j.BasicAuth(username, password, ""))
 	if err != nil {
 		return nil, err
 	}
