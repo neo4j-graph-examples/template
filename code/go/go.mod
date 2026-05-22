@@ -1,5 +1,5 @@
 module example
 
-go 1.20
+go 1.24
 
-require github.com/neo4j/neo4j-go-driver/v5 v5.8.0
+require github.com/neo4j/neo4j-go-driver/v6 v6.0.0
